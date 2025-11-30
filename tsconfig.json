@@ -13,14 +13,21 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+
+    // --- PERBAIKAN DI SINI ---
+    // "baseUrl" dan "paths" harus berada di level ini,
+    // BUKAN di dalam array "plugins".
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    // --- AKHIR PERBAIKAN ---
+
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -29,6 +36,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/admin/programs/[slug]/page.tsx"  ],
   "exclude": ["node_modules"]
 }
