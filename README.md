@@ -1,72 +1,84 @@
 Website Pendaftaran Pelatihan LPK MCLS
 
-Website ini dibangun menggunakan Next.js, Tailwind CSS, Prisma, dan Midtrans Payment Gateway. Ikuti langkah di bawah ini untuk menjalankan program di komputer Anda.
+Website ini dibangun menggunakan Next.js, Tailwind CSS, Prisma, dan Midtrans Payment Gateway sebagai sistem pembayaran. Ikuti langkah-langkah di bawah ini untuk menjalankan project di komputer Anda.
 
-Prasyarat
+🚀 Prasyarat
 
-Pastikan komputer Anda sudah terinstall:
+Pastikan komputer Anda sudah terpasang:
 
 Node.js (Versi 18 atau terbaru)
 
 Git
 
-Database PostgreSQL (Bisa lokal atau online seperti Supabase/Neon)
+PostgreSQL Database (Lokal atau menggunakan layanan seperti Supabase/Neon)
 
-Ngrok (Untuk mengekspos localhost ke internet)
+Ngrok (Untuk mengekspos localhost ke internet agar Midtrans dapat melakukan callback)
 
-Cara Instalasi
+📥 Cara Instalasi
+1. Clone Repository
 
-Download atau Clone Repository
-Buka terminal atau CMD, lalu jalankan:
-git clone https://www.google.com/search?q=https://github.com/raflyr23/MCLS-Company.git
+Buka terminal/CMD lalu jalankan:
 
-Install Dependencies
-Download semua library yang dibutuhkan dengan perintah:
+git clone https://github.com/raflyr23/MCLS-Company.git
+
+2. Install Dependencies
+
+Jalankan perintah:
+
 npm install
 
-Konfigurasi Environment (.env) Buat file baru bernama .env di folder utama proyek. Copy dan paste .env.example
+3. Konfigurasi Environment
 
-6. Setup Ngrok (Penting untuk Midtrans)
+Buat file .env di folder utama, lalu salin isi dari .env.example.
 
-Agar Midtrans bisa mengarahkan user kembali ke website Anda setelah bayar (Redirect) dan mengirim notifikasi status, localhost harus bisa diakses publik.
+🌐 Setup Ngrok (Wajib untuk Midtrans)
 
-Jalankan Ngrok
-Buka terminal baru (jangan tutup terminal npm run dev), lalu ketik:
+Midtrans membutuhkan URL publik untuk proses redirect setelah pembayaran dan mengirim notification callback.
+
+1. Jalankan Ngrok
+
+Buka terminal baru (jangan tutup terminal npm run dev):
+
 ngrok http 3000
 
-Ambil URL Forwarding
-Copy URL HTTPS yang muncul (Contoh: https://abcd-1234.ngrok-free.app).
+2. Ambil URL Forwarding
 
-Update file .env
-Ganti NEXT_PUBLIC_BASE_URL dengan URL Ngrok tersebut:
-NEXT_PUBLIC_BASE_URL="https://www.google.com/search?q=https://abcd-1234.ngrok-free.app"
+Copy URL HTTPS yang muncul, contoh:
 
-(Restart terminal npm run dev setiap kali mengubah file .env)
+https://abcd-1234.ngrok-free.app
 
-Update Dashboard Midtrans (Sandbox)
+3. Update File .env
+NEXT_PUBLIC_BASE_URL="https://abcd-1234.ngrok-free.app"
 
-Login ke Midtrans Dashboard.
 
-Masuk ke Settings > Payment> Notification URL.
+Note: Restart npm run dev setiap kali mengubah file .env
 
-Isi Notification URL endpoint dengan: https://abcd-1234.ngrok-free.app/profile
+🔧 Update Dashboard Midtrans (Sandbox)
 
-Catatan Penting
+Login ke Dashboard Midtrans
 
-Akses Midtrans: Pastikan Access Keys di .env adalah versi SANDBOX.
+Masuk ke Settings > Payment > Notification URL
 
-URL Ngrok Berubah: Setiap kali Anda mematikan Ngrok, URL-nya akan berubah. Anda harus update .env dan Dashboard Midtrans lagi (kecuali Anda punya akun Ngrok berbayar).
+Isi Notification URL sebagai berikut:
 
-Login User: Jika database masih kosong, daftar akun baru lewat menu Register di website.
+https://abcd-1234.ngrok-free.app/profile
 
-Teknologi yang Dipakai
+⚠️ Catatan Penting
+
+Gunakan Midtrans Access Keys versi SANDBOX di .env
+
+URL Ngrok selalu berubah jika Ngrok dimatikan → update .env dan dashboard Midtrans kembali
+
+Jika database masih kosong, buat user baru melalui halaman Register
+
+🛠️ Teknologi yang Digunakan
 
 Next.js (App Router)
 
-Tailwind CSS (Styling)
+Tailwind CSS
 
-Prisma ORM (Database)
+Prisma ORM
 
-NextAuth.js (Otentikasi)
+NextAuth.js
 
-Midtrans (Pembayaran)
+Midtrans Payment Gateway
