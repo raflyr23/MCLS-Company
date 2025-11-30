@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+Website Pendaftaran Pelatihan LPK MCLS
 
-First, run the development server:
+Website ini dibangun menggunakan Next.js, Tailwind CSS, Prisma, dan Midtrans Payment Gateway sebagai sistem pembayaran. Ikuti langkah-langkah di bawah ini untuk menjalankan project di komputer Anda.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+🚀 Prasyarat
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Pastikan komputer Anda sudah terpasang:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Node.js (Versi 18 atau terbaru)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Git
 
-## Learn More
+PostgreSQL Database (Lokal atau menggunakan layanan seperti Supabase/Neon)
 
-To learn more about Next.js, take a look at the following resources:
+Ngrok (Untuk mengekspos localhost ke internet agar Midtrans dapat melakukan callback)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+📥 Cara Instalasi
+1. Clone Repository
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Buka terminal/CMD lalu jalankan:
 
-## Deploy on Vercel
+git clone https://github.com/raflyr23/MCLS-Company.git
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Install Dependencies
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Jalankan perintah:
+
+npm install
+
+3. Konfigurasi Environment
+
+Buat file .env di folder utama, lalu salin isi dari .env.example.
+
+🌐 Setup Ngrok (Wajib untuk Midtrans)
+
+Midtrans membutuhkan URL publik untuk proses redirect setelah pembayaran dan mengirim notification callback.
+
+1. Jalankan Ngrok
+
+Buka terminal baru (jangan tutup terminal npm run dev):
+
+ngrok http 3000
+
+2. Ambil URL Forwarding
+
+Copy URL HTTPS yang muncul, contoh:
+
+https://abcd-1234.ngrok-free.app
+
+3. Update File .env
+NEXT_PUBLIC_BASE_URL="https://abcd-1234.ngrok-free.app"
+
+
+Note: Restart npm run dev setiap kali mengubah file .env
+
+🔧 Update Dashboard Midtrans (Sandbox)
+
+Login ke Dashboard Midtrans
+
+Masuk ke Settings > Payment > Notification URL
+
+Isi Notification URL sebagai berikut:
+
+https://abcd-1234.ngrok-free.app/profile
+
+⚠️ Catatan Penting
+
+Gunakan Midtrans Access Keys versi SANDBOX di .env
+
+URL Ngrok selalu berubah jika Ngrok dimatikan → update .env dan dashboard Midtrans kembali
+
+Jika database masih kosong, buat user baru melalui halaman Register
+
+🛠️ Teknologi yang Digunakan
+
+Next.js (App Router)
+
+Tailwind CSS
+
+Prisma ORM
+
+NextAuth.js
+
+Midtrans Payment Gateway
+>>>>>>> ee4fc68f36450c8c9cb48420a9a088c06a4c4139
