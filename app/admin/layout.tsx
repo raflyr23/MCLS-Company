@@ -11,7 +11,6 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  // @ts-expect-error: Property role belum terdefinisi
   if (session?.user?.role !== 'ADMIN') {
     redirect('/'); 
   }
