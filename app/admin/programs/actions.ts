@@ -1,125 +1,146 @@
+// app/admin/programs/actions.ts
 "use server";
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import path from "path";
+import { put, del } from "@vercel/blob"; // 1. Ganti fs dengan @vercel/blob
 
-// --- HELPER FUNCTIONS (Tetap Sama) ---
+// --- HELPER UPLOAD (VERSI VERCEL BLOB) ---
 async function uploadImage(file: File): Promise<string | null> {
   if (!file || file.size === 0) return null;
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  const cleanName = file.name.replace(/\s+/g, '-');
-  const filename = `${Date.now()}-${cleanName}`;
-  const uploadDir = path.join(process.cwd(), "public/uploads/programs");
-  try {
-    await mkdir(uploadDir, { recursive: true });
-  } catch (e) {}
-  const filePath = path.join(uploadDir, filename);
-  await writeFile(filePath, buffer);
-  return `/uploads/programs/${filename}`;
+
+  // Bersihkan nama file
+  const cleanName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '');
+  const filename = `programs/${Date.now()}-${cleanName}`;
+  
+  // Upload langsung ke Cloud (Vercel Blob)
+  // Ini tidak butuh akses folder lokal, jadi aman untuk Vercel
+  const blob = await put(filename, file, {
+    access: 'public',
+  });
+
+  return blob.url; // Mengembalikan URL https://...
 }
 
+// --- HELPER DELETE (VERSI VERCEL BLOB) ---
 async function deleteImageFile(imageUrl: string) {
   try {
-    if (imageUrl.startsWith("/uploads/")) {
-      const filePath = path.join(process.cwd(), "public", imageUrl);
-      await unlink(filePath);
-    }
+    // Hapus file di cloud berdasarkan URL-nya
+    await del(imageUrl);
   } catch (error) {
     console.error("Gagal menghapus file gambar:", error);
   }
 }
 
-// --- MAIN ACTIONS (Update di sini) ---
-
-// 1. Tambah Program Baru
+// --- CREATE PROGRAM ---
 export async function createProgram(formData: FormData) {
-  const title = formData.get("title") as string;
-  const duration = formData.get("duration") as string;
-  const description = formData.get("description") as string;
-  const imageFile = formData.get("imageFile") as File;
-  
-  // PERBAIKAN: Ambil harga dari form, convert ke Number. Default 0.
-  const price = Number(formData.get("price")) || 0; 
+  try {
+    const title = formData.get("title") as string;
+    const duration = formData.get("duration") as string;
+    const description = formData.get("description") as string;
+    const imageFile = formData.get("imageFile") as File;
+    const priceRaw = formData.get("price");
+    
+    const price = priceRaw ? Number(priceRaw) : 0;
 
-  let imageSrc = "/images/placeholder.jpg"; 
-  const uploadedPath = await uploadImage(imageFile);
-  if (uploadedPath) {
-    imageSrc = uploadedPath;
+    // Default image (gunakan URL publik jika ada, atau placeholder lokal)
+    let imageSrc = "/images/placeholder.jpg"; 
+    
+    // Proses Upload ke Cloud
+    if (imageFile && imageFile.size > 0) {
+        const uploadedPath = await uploadImage(imageFile);
+        if (uploadedPath) imageSrc = uploadedPath;
+    }
+
+    // Generate Slug
+    let slug = title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-");
+    const checkSlug = await prisma.program.findUnique({ where: { slug } });
+    if (checkSlug) {
+        slug = `${slug}-${Date.now()}`;
+    }
+
+    await prisma.program.create({
+      data: {
+        title,
+        slug,
+        duration,
+        description,
+        imageSrc, // Simpan URL cloud (https://...)
+        price,
+      },
+    });
+
+    revalidatePath("/admin/programs");
+    revalidatePath("/programs");
+
+  } catch (error: any) {
+    console.error("❌ ERROR CREATE PROGRAM:", error);
+    throw new Error(error.message || "Gagal menyimpan data");
   }
+}
 
-  const slug = title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+// --- UPDATE PROGRAM ---
+export async function updateProgram(formData: FormData) {
+  try {
+    const id = formData.get("id") as string;
+    const title = formData.get("title") as string;
+    const duration = formData.get("duration") as string;
+    const description = formData.get("description") as string;
+    const imageFile = formData.get("imageFile") as File;
+    const priceRaw = formData.get("price");
+    
+    const price = priceRaw ? Number(priceRaw) : 0;
 
-  await prisma.program.create({
-    data: {
+    const oldProgram = await prisma.program.findUnique({ where: { id } });
+
+    const dataToUpdate: any = {
       title,
-      slug,
       duration,
       description,
-      imageSrc,
-      price, // Simpan harga ke DB
-    },
-  });
+      price,
+    };
 
-  revalidatePath("/admin/programs");
-  revalidatePath("/programs");
-}
-
-// 2. Update Program
-export async function updateProgram(formData: FormData) {
-  const id = formData.get("id") as string;
-  const title = formData.get("title") as string;
-  const duration = formData.get("duration") as string;
-  const description = formData.get("description") as string;
-  const imageFile = formData.get("imageFile") as File;
-  
-  // PERBAIKAN: Ambil harga dari form
-  const price = Number(formData.get("price")) || 0;
-
-  const oldProgram = await prisma.program.findUnique({ where: { id } });
-
-  const dataToUpdate: any = {
-    title,
-    duration,
-    description,
-    price, // Update harga
-  };
-
-  if (imageFile && imageFile.size > 0) {
-    const uploadedPath = await uploadImage(imageFile);
-    if (uploadedPath) {
-      dataToUpdate.imageSrc = uploadedPath;
-      if (oldProgram?.imageSrc && oldProgram.imageSrc !== "/images/placeholder.jpg") {
-        await deleteImageFile(oldProgram.imageSrc);
+    if (imageFile && imageFile.size > 0) {
+      const uploadedPath = await uploadImage(imageFile);
+      if (uploadedPath) {
+        dataToUpdate.imageSrc = uploadedPath;
+        
+        // Hapus gambar lama di Cloud jika ada (dan bukan placeholder bawaan)
+        if (oldProgram?.imageSrc && oldProgram.imageSrc.startsWith("https")) {
+          await deleteImageFile(oldProgram.imageSrc);
+        }
       }
     }
+
+    await prisma.program.update({
+      where: { id },
+      data: dataToUpdate,
+    });
+
+    revalidatePath("/admin/programs");
+    revalidatePath("/programs");
+    
+  } catch (error: any) {
+    console.error("❌ ERROR UPDATE PROGRAM:", error);
+    throw new Error("Gagal mengupdate program");
   }
-
-  await prisma.program.update({
-    where: { id },
-    data: dataToUpdate,
-  });
-
-  revalidatePath("/admin/programs");
-  revalidatePath("/programs");
 }
 
-// 3. Hapus Program (Tetap)
+// --- DELETE PROGRAM ---
 export async function deleteProgram(id: string) {
-  const program = await prisma.program.findUnique({ where: { id } });
-  if (program) {
-    await prisma.program.delete({ where: { id } });
-    if (program.imageSrc && program.imageSrc !== "/images/placeholder.jpg") {
-      await deleteImageFile(program.imageSrc);
+    try {
+        const program = await prisma.program.findUnique({ where: { id } });
+        if (program) {
+            await prisma.program.delete({ where: { id } });
+            
+            // Hapus gambar di Cloud
+            if (program.imageSrc && program.imageSrc.startsWith("https")) {
+                await deleteImageFile(program.imageSrc);
+            }
+        }
+        revalidatePath("/admin/programs");
+        revalidatePath("/programs");
+    } catch (error) {
+        console.error("Error delete:", error);
     }
-  }
-  revalidatePath("/admin/programs");
-  revalidatePath("/programs");
 }
