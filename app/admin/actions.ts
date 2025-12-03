@@ -1,46 +1,37 @@
+// app/admin/programs/actions.ts
 "use server";
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import path from "path";
+import { put, del } from "@vercel/blob"; // 1. Import Vercel Blob
 
-// --- HELPER FUNCTIONS ---
+// --- HELPER UPLOAD KE VERCEL BLOB ---
 async function uploadImage(file: File): Promise<string | null> {
   if (!file || file.size === 0) return null;
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  
-  // Bersihkan nama file
-  const cleanName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '');
-  const filename = `${Date.now()}-${cleanName}`;
-  
-  const uploadDir = path.join(process.cwd(), "public/uploads/programs");
-  try {
-    await mkdir(uploadDir, { recursive: true });
-  } catch (e) {
-    // Folder sudah ada, lanjut
-  }
 
-  const filePath = path.join(uploadDir, filename);
-  await writeFile(filePath, buffer);
-  return `/uploads/programs/${filename}`;
+  // Generate nama file yang aman
+  const cleanName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '');
+  const filename = `programs/${Date.now()}-${cleanName}`; // Simpan di folder 'programs'
+  
+  // Upload ke Vercel Blob
+  const blob = await put(filename, file, {
+    access: 'public',
+  });
+
+  return blob.url; // Mengembalikan URL publik (https://...)
 }
 
+// --- HELPER DELETE DARI VERCEL BLOB ---
 async function deleteImageFile(imageUrl: string) {
   try {
-    if (imageUrl.startsWith("/uploads/")) {
-      const filePath = path.join(process.cwd(), "public", imageUrl);
-      await unlink(filePath);
-    }
+    // Vercel Blob cukup menghapus berdasarkan URL-nya
+    await del(imageUrl);
   } catch (error) {
     console.error("Gagal menghapus file gambar:", error);
   }
 }
 
-// --- MAIN ACTIONS ---
-
-// 1. Tambah Program Baru
+// --- CREATE PROGRAM ---
 export async function createProgram(formData: FormData) {
   try {
     const title = formData.get("title") as string;
@@ -49,17 +40,20 @@ export async function createProgram(formData: FormData) {
     const imageFile = formData.get("imageFile") as File;
     const priceRaw = formData.get("price");
     
-    // Validasi sederhana
     if (!title || !duration || !description) {
         throw new Error("Judul, Durasi, dan Deskripsi wajib diisi.");
     }
 
     const price = priceRaw ? Number(priceRaw) : 0;
 
+    // Default image jika user tidak upload
+    // Pastikan Anda punya gambar ini di folder public/images atau gunakan URL eksternal
     let imageSrc = "/images/placeholder.jpg"; 
+    
+    // Proses Upload
     if (imageFile && imageFile.size > 0) {
-        const uploadedPath = await uploadImage(imageFile);
-        if (uploadedPath) imageSrc = uploadedPath;
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) imageSrc = uploadedUrl;
     }
 
     // Generate Slug
@@ -83,14 +77,13 @@ export async function createProgram(formData: FormData) {
     revalidatePath("/admin/programs");
     revalidatePath("/programs");
 
-  } catch (error) {
-    // PERBAIKAN: Menghapus ': any' dan menggunakan casting
+  } catch (error: any) {
     console.error("❌ ERROR CREATE PROGRAM:", error);
-    throw new Error((error as Error).message || "Gagal menyimpan ke database");
+    throw new Error(error.message || "Gagal menyimpan ke database");
   }
 }
 
-// 2. Update Program
+// --- UPDATE PROGRAM ---
 export async function updateProgram(formData: FormData) {
   try {
     const id = formData.get("id") as string;
@@ -104,13 +97,12 @@ export async function updateProgram(formData: FormData) {
 
     const oldProgram = await prisma.program.findUnique({ where: { id } });
 
-    // PERBAIKAN: Definisi tipe eksplisit, bukan 'any'
     const dataToUpdate: {
       title: string;
       duration: string;
       description: string;
       price: number;
-      imageSrc?: string; // Opsional
+      imageSrc?: string;
     } = {
       title,
       duration,
@@ -119,12 +111,13 @@ export async function updateProgram(formData: FormData) {
     };
 
     if (imageFile && imageFile.size > 0) {
-      const uploadedPath = await uploadImage(imageFile);
-      if (uploadedPath) {
-        dataToUpdate.imageSrc = uploadedPath;
+      const uploadedUrl = await uploadImage(imageFile);
+      if (uploadedUrl) {
+        dataToUpdate.imageSrc = uploadedUrl;
         
-        // Hapus gambar lama
-        if (oldProgram?.imageSrc && oldProgram.imageSrc !== "/images/placeholder.jpg") {
+        // Hapus gambar lama di Blob jika ada (dan bukan placeholder default)
+        // Ciri gambar Vercel Blob: URL dimulai dengan "https://"
+        if (oldProgram?.imageSrc && oldProgram.imageSrc.startsWith("https")) {
           await deleteImageFile(oldProgram.imageSrc);
         }
       }
@@ -138,20 +131,21 @@ export async function updateProgram(formData: FormData) {
     revalidatePath("/admin/programs");
     revalidatePath("/programs");
     
-  } catch (error) {
-    // PERBAIKAN: Menghapus ': any'
+  } catch (error: any) {
     console.error("❌ ERROR UPDATE PROGRAM:", error);
     throw new Error("Gagal mengupdate program");
   }
 }
 
-// 3. Hapus Program
+// --- DELETE PROGRAM ---
 export async function deleteProgram(id: string) {
     try {
         const program = await prisma.program.findUnique({ where: { id } });
         if (program) {
             await prisma.program.delete({ where: { id } });
-            if (program.imageSrc && program.imageSrc !== "/images/placeholder.jpg") {
+            
+            // Hapus gambar di Blob
+            if (program.imageSrc && program.imageSrc.startsWith("https")) {
                 await deleteImageFile(program.imageSrc);
             }
         }
