@@ -70,7 +70,8 @@ export default function ProgramForm({ program }: { program?: Program }) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
+          {/* PERUBAHAN: w-[95%] sm:w-full */}
+          <div className="bg-white rounded-xl shadow-2xl w-[95%] sm:w-full max-w-lg overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
             
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
               <h3 className="font-bold text-lg text-gray-800">
@@ -157,7 +158,7 @@ export default function ProgramForm({ program }: { program?: Program }) {
                 ></textarea>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition font-medium">
                   Batal
                 </button>
