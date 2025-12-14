@@ -3,9 +3,26 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { NAV_LINKS } from '@/lib/data';
 import { signOut, useSession } from 'next-auth/react';
+
+// 1. Import Font: Inter (Standar Profesional UI) & Playfair Display (Elegan untuk Logo)
+import { Inter, Playfair_Display } from 'next/font/google';
+
+// 2. Konfigurasi Font
+const fontSans = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  // Inter memiliki variable font otomatis, jadi tidak perlu define weight satu per satu
+});
+
+const fontSerif = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['700'], 
+  display: 'swap',
+});
 
 const HeaderClient: React.FC = () => {
   const { data: session } = useSession();
@@ -40,28 +57,36 @@ const HeaderClient: React.FC = () => {
 
   return (
     <header 
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out border-b ${
+      // 3. Terapkan fontSans (Inter) sebagai default untuk seluruh header
+      className={`${fontSans.className} fixed top-0 w-full z-50 transition-all duration-500 ease-in-out border-b ${
         isScrolled 
-          // STATE SCROLLED: Slate-950 (Sangat gelap) dengan Blur, menyatu sempurna dengan tema gelap
           ? 'bg-slate-950/80 backdrop-blur-lg border-slate-800/50 py-3 shadow-2xl shadow-black/20' 
-          // STATE TOP: Transparan penuh, tanpa border
           : 'bg-transparent border-transparent py-6'
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         
-        {/* --- LOGO --- */}
-        <Link href="/" className="text-2xl font-bold flex items-center gap-3 group">
-          {/* Logo Box */}
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300 border border-indigo-500/30">
-            M
+        {/* --- LOGO AREA --- */}
+        <Link href="/" className="flex items-center gap-3 group">
+          
+          {/* Container Gambar Logo */}
+          <div className="relative w-10 h-10 transition-transform duration-300 group-hover:scale-110">
+            <Image
+              src="/images/logofix.png" 
+              alt="LPK MCLS Logo"
+              fill
+              className="object-contain" 
+            />
           </div>
+
           {/* Teks Logo */}
           <div className="flex flex-col">
-            <span className="text-slate-100 tracking-tight font-extrabold text-lg leading-none group-hover:text-indigo-400 transition-colors">
-              LPK MCLS
+            {/* Menggunakan fontSerif (Playfair Display) untuk kesan Brand yang kuat */}
+            <span className={`${fontSerif.className} text-slate-100 tracking-tight font-bold text-xl leading-none group-hover:text-indigo-400 transition-colors`}>
+              Mahardika
             </span>
-            <span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase mt-0.5">
+            {/* Menggunakan fontSans (Inter) untuk tagline agar mudah dibaca */}
+            <span className="text-[10px] text-slate-400 font-medium tracking-[0.2em] uppercase mt-1">
               Change Life Solution
             </span>
           </div>
@@ -73,7 +98,7 @@ const HeaderClient: React.FC = () => {
             <Link
               key={link.name}
               href={link.href}
-              className={`text-sm font-medium transition-all duration-300 relative group ${
+              className={`text-sm font-medium tracking-wide transition-all duration-300 relative group ${
                 pathname === link.href ? 'text-white' : 'text-slate-400 hover:text-indigo-300'
               }`}
             >
@@ -109,21 +134,21 @@ const HeaderClient: React.FC = () => {
                 </svg>
               </button>
 
-              {/* Dropdown Content (Dark & Seamless) */}
+              {/* Dropdown Content */}
               <div className={`absolute right-0 mt-4 w-64 bg-slate-950 rounded-2xl shadow-2xl border border-slate-800 py-2 transition-all duration-200 origin-top-right overflow-hidden ring-1 ring-white/5 ${isProfileOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
                 <div className="px-5 py-4 border-b border-slate-800 mb-2 bg-slate-900/50">
                   <p className="text-sm font-bold text-white truncate">{session.user?.name}</p>
                   <p className="text-xs text-slate-500 truncate">{session.user?.email}</p>
                 </div>
                 
-                <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-5 py-2.5 text-sm text-slate-400 hover:bg-slate-800 hover:text-indigo-400 transition-colors mx-2 rounded-lg">
+                <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-5 py-2.5 text-sm text-slate-400 hover:bg-slate-800 hover:text-indigo-400 transition-colors mx-2 rounded-lg font-medium">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   Profil Saya
                 </Link>
                 
                 <div className="border-t border-slate-800 my-2 mx-2"></div>
                 
-                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-[calc(100%-16px)] text-left px-5 py-2.5 text-sm text-red-400 hover:bg-red-950/30 hover:text-red-300 transition-colors flex items-center gap-3 mx-2 rounded-lg">
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-[calc(100%-16px)] text-left px-5 py-2.5 text-sm text-red-400 hover:bg-red-950/30 hover:text-red-300 transition-colors flex items-center gap-3 mx-2 rounded-lg font-medium">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                   Keluar
                 </button>
@@ -132,10 +157,10 @@ const HeaderClient: React.FC = () => {
           ) : (
             // BELUM LOGIN
             <div className="flex items-center gap-4">
-              <Link href="/login" className="text-sm font-semibold text-slate-400 hover:text-white transition-colors">
+              <Link href="/login" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
                 Masuk
               </Link>
-              <Link href="/pendaftaran" className="bg-indigo-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0 border border-indigo-500/50">
+              <Link href="/pendaftaran" className="bg-indigo-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0 border border-indigo-500/50">
                 Daftar Sekarang
               </Link>
             </div>
@@ -154,7 +179,7 @@ const HeaderClient: React.FC = () => {
         </button>
       </div>
 
-      {/* --- MOBILE MENU OVERLAY (Seamless Dark) --- */}
+      {/* --- MOBILE MENU OVERLAY --- */}
       <div className={`md:hidden bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 absolute w-full left-0 transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 translate-y-0 visible' : 'opacity-0 -translate-y-5 invisible'}`}>
         <div className="p-4 space-y-1">
           {NAV_LINKS.map((link) => (

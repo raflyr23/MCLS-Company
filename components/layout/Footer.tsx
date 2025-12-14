@@ -1,5 +1,20 @@
+// components/layout/Footer.tsx
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Inter, Playfair_Display } from 'next/font/google';
+
+// Konfigurasi Font (sama seperti di Header)
+const fontSans = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const fontSerif = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['700'], 
+  display: 'swap',
+});
 
 const Footer: React.FC = () => {
   const socialLinks = [
@@ -47,16 +62,33 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-slate-950 text-slate-400 border-t border-slate-800/50 mt-auto">
+    <footer className={`${fontSans.className} bg-slate-950 text-slate-400 border-t border-slate-800/50 mt-auto`}>
       <div className="container mx-auto px-6 pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           
           {/* Brand & Desc */}
           <div className="md:col-span-2">
-            <Link href="/" className="text-2xl font-extrabold text-white flex items-center gap-2 mb-6">
-               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">M</div>
-               <span>LPK MCLS</span>
+            <Link href="/" className="flex items-center gap-3 mb-6 group w-fit">
+               {/* Container Gambar Logo */}
+               <div className="relative w-10 h-10 transition-transform duration-300 group-hover:scale-110">
+                <Image
+                  src="/images/logofix.png" 
+                  alt="LPK MCLS Logo"
+                  fill
+                  className="object-contain" 
+                />
+              </div>
+              
+              <div className="flex flex-col">
+                <span className={`${fontSerif.className} text-slate-100 tracking-tight font-bold text-xl leading-none group-hover:text-indigo-400 transition-colors`}>
+                  Mahardika
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium tracking-[0.2em] uppercase mt-1">
+                  Change Life Solution
+                </span>
+              </div>
             </Link>
+
             <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
               Kami berdedikasi untuk menciptakan tenaga kerja profesional yang siap bersaing di era digital melalui kurikulum berbasis industri dan mentor berpengalaman.
             </p>
