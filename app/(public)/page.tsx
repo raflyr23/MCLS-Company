@@ -41,7 +41,7 @@ export default function HomePage() {
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
-            Bergabunglah dengan <strong>Mahardika Change Life Solution</strong>. Kami menyediakan pelatihan keterampilan standar industri untuk masa depan yang lebih cerah.
+            Bergabunglah dengan <strong> Mahardika Citra Lintas Semesta</strong>. Kami menyediakan pelatihan keterampilan standar industri untuk masa depan yang lebih cerah.
           </p>
 
           {/* Tombol CTA (Call to Action) */}
