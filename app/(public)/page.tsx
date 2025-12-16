@@ -1,7 +1,10 @@
 // app/(public)/page.tsx
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { HOME_FEATURES } from '@/lib/data';
+import Image from 'next/image';
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { ProgramCardSkeleton } from '@/components/ui/Skeleton';
 
 export default function HomePage() {
   return (
@@ -59,51 +62,106 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- FITUR UNGGULAN --- */}
-      <section className="py-24 bg-slate-950/50 relative">
-        {/* Dekorasi Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl bg-indigo-900/10 blur-[100px] rounded-full -z-10"></div>
-
+      {/* --- FEATURES / PHILOSOPHY SECTION (Updated) --- */}
+      <div className="py-20 bg-slate-50 dark:bg-slate-950">
         <div className="container mx-auto px-6">
-          
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Mengapa Memilih Kami?
-            </h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 mx-auto rounded-full"></div>
-            <p className="mt-4 text-slate-400 max-w-xl mx-auto">
-              Kualitas dan integritas adalah prioritas kami dalam mencetak lulusan yang kompeten.
-            </p>
+          <div className="grid md:grid-cols-3 gap-10">
+            {/* Feature 1 */}
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-indigo-500/30 transition-colors">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-xl flex items-center justify-center mb-6">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Kompetensi Global</h3>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                Kurikulum berbasis industri internasional untuk memastikan Anda siap bersaing dan bekerja di negara tujuan.
+              </p>
+            </div>
+             {/* Feature 2 */}
+             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-amber-500/30 transition-colors">
+              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-xl flex items-center justify-center mb-6">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Filosofi Mahardika</h3>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                Setiap langkah diarahkan untuk menanamkan nilai kemuliaan, profesionalisme, dan integritas pada setiap alumni.
+              </p>
+            </div>
+             {/* Feature 3 */}
+             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-500/30 transition-colors">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-xl flex items-center justify-center mb-6">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Dampak Nyata</h3>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                Menciptakan cerita keberhasilan yang tidak hanya membawa pulang gaji kompetitif, tapi juga inspirasi bagi generasi berikutnya.
+              </p>
+            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Grid Cards */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {HOME_FEATURES.map((feature, index) => (
-              <div
-                key={index}
-                className="group bg-slate-800/50 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-indigo-500/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-indigo-500/10"
-              >
-                {/* Icon Container */}
-                <div className="w-14 h-14 bg-slate-700/50 rounded-xl flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300 shadow-inner">
-                  <feature.icon className="w-7 h-7" />
+      {/* --- PROGRAMS LIST SECTION (Logic tetap sama) --- */}
+      
+    </div>
+  );
+}
+
+// --- COMPONENT PROGRAM LIST (Server Component) ---
+async function ProgramList() {
+  const session = await auth();
+  const programs = await prisma.program.findMany({ orderBy: { createdAt: 'desc' } });
+
+  if (programs.length === 0) {
+    return (
+      <div className="text-center py-24 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
+        <p className="text-slate-400 text-lg font-medium">Belum ada program pelatihan yang tersedia.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {programs.map((program) => {
+        const hrefLink = session 
+          ? `/daftar-program?judul=${encodeURIComponent(program.title)}`
+          : `/pendaftaran?program=${encodeURIComponent(program.title)}`;
+
+        return (
+          <div key={program.id} className="group flex flex-col bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Link href={`/programs/${program.slug}`} className="relative h-56 w-full overflow-hidden block">
+              <Image src={program.imageSrc} alt={program.title} fill style={{ objectFit: 'cover' }} className="transition-transform duration-700 group-hover:scale-110" />
+              <div className="absolute bottom-4 left-4">
+                <span className="bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600/50">
+                  {program.duration}
+                </span>
+              </div>
+            </Link>
+
+            <div className="p-6 flex flex-col flex-grow">
+              <div className="mb-auto">
+                <Link href={`/programs/${program.slug}`}>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">{program.title}</h3>
+                </Link>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-3 mb-4">{program.description}</p>
+              </div>
+
+              <div className="pt-5 border-t border-slate-100 dark:border-slate-700/50">
+                <div className="flex items-end justify-between mb-5">
+                  <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Investasi</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
+                    {program.price === 0 ? "Gratis" : `Rp ${program.price.toLocaleString('id-ID')}`}
+                  </span>
                 </div>
                 
-                {/* Content */}
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  {feature.description}
-                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link href={`/programs/${program.slug}`} className="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/50 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Detail</Link>
+                  <Link href={hrefLink} className="flex items-center justify-center px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-500 transition-all shadow-lg hover:shadow-indigo-500/40">Daftar</Link>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
-
-        </div>
-      </section>
-
-
+        );
+      })}
     </div>
   );
 }

@@ -87,7 +87,7 @@ const HeaderClient: React.FC = () => {
             </span>
             {/* Menggunakan fontSans (Inter) untuk tagline agar mudah dibaca */}
             <span className="text-[10px] text-slate-400 font-medium tracking-[0.2em] uppercase mt-1">
-              Change Life Solution
+              Citra Lintas Semesta
             </span>
           </div>
         </Link>
